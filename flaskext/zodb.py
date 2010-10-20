@@ -60,6 +60,14 @@ class ZODB(object):
 
     @contextmanager
     def __call__(self):
+        """Transactional context.
+
+        ::
+
+            with db() as root:
+                root['this'] = 'is committed at the end of the context.'
+
+        """
         try:
             connection = self.db.open()
             transaction.begin()
