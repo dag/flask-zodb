@@ -83,7 +83,7 @@ class Factory(object):
     ::
 
         class Dice(Model):
-            side = Factory(random.randrange, 1, 7)
+            side = Factory(random.randint, 1, 6)
 
     ::
 
