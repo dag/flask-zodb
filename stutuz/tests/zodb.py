@@ -15,8 +15,8 @@ class ZODB(TestBase):
     def test_read(self):
         """Views can read from the database"""
 
-        with db():
-            db['_test'] = 'Victory!'
+        with db() as root:
+            root['_test'] = 'Victory!'
 
         @self.app.route('/_test/')
         def read_value():
@@ -34,5 +34,5 @@ class ZODB(TestBase):
 
         self.client.get('/_test/Written!')
 
-        with db():
-            self.assert_equal(db['_test'], 'Written!')
+        with db() as root:
+            self.assert_equal(root['_test'], 'Written!')

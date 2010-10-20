@@ -56,9 +56,9 @@ class ZODB(object):
     @contextmanager
     def __call__(self):
         try:
-            g._zodb_connection = self.db.open()
+            connection = self.db.open()
             transaction.begin()
-            yield
+            yield connection.root()
         finally:
             transaction.commit()
-            g._zodb_connection.close()
+            connection.close()
