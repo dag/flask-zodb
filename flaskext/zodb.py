@@ -20,6 +20,38 @@ from persistent.mapping import PersistentMapping
 
 
 class ZODB(object):
+    """ZODB extension for Flask: persistence of native Python objects.
+
+    Basic setup::
+
+        from ZODB.FileStorage import FileStorage
+        from flask import Flask, redirect, render_template_string
+        from flaskext.zodb import ZODB
+
+        ZODB_STORAGE = lambda: FileStorage('app.fs')
+
+        app = Flask(__name__)
+        app.config.from_object(__name__)
+        db = ZODB(app)
+
+        @app.route('/')
+        @app.route('/<message>')
+        def index(message=None):
+            if message is not None:
+                db['message'] = message
+                return redirect('/')
+            return render_template_string('Latest message: {{ message }}',
+                                          message=db['message'])
+
+    During requests the ``db`` object can be used as a ``dict`` for setting,
+    getting and deleting keys. For other operations, ``db.root`` implements
+    the full ``dict`` interface.
+
+    Outside of requests, the object can be used as a context manager if
+    called, yielding the root object to be used inside the context.
+    See :meth:`__call__`.
+
+    """
 
     def __init__(self, app=None):
         self.app = app
@@ -29,6 +61,20 @@ class ZODB(object):
     @cached_property
     def db(self):
         return DB(self.app.config['ZODB_STORAGE']())
+
+    @property
+    def connection(self):
+        """Request-local database connection."""
+        return g._zodb_connection
+
+    @connection.setter
+    def connection(self, new):
+        g._zodb_connection = new
+
+    @property
+    def root(self):
+        """Root object for the request-local connection."""
+        return self.connection.root()
 
     def init_app(self, app):
         assert 'ZODB_STORAGE' in app.config, \
@@ -40,27 +86,30 @@ class ZODB(object):
 
         @app.before_request
         def open_db():
-            g._zodb_connection = self.db.open()
+            self.connection = self.db.open()
             transaction.begin()
 
         @app.after_request
         def close_db(response):
             transaction.commit()
-            g._zodb_connection.close()
+            self.connection.close()
             return response
 
     def __setitem__(self, key, value):
-        g._zodb_connection.root()[key] = value
+        """Set an item in the request-local root object."""
+        self.root[key] = value
 
     def __getitem__(self, key):
-        return g._zodb_connection.root()[key]
+        """Get an item in the request-local root object."""
+        return self.root[key]
 
     def __delitem__(self, key):
-        del g._zodb_connection.root()[key]
+        """Delete an item in the request-local root object."""
+        del self.root[key]
 
     @contextmanager
     def __call__(self):
-        """Transactional context.
+        """Transactional context, for database access outside of requests.
 
         ::
 
