@@ -10,6 +10,7 @@ from datetime import datetime
 from uuid import UUID
 
 from flaskext.zodb import Model, List, Mapping, Timestamp, UUID4, current_db
+from flaskext.zodb import PersistentList, PersistentMapping
 
 from stutuz.tests import TestBase
 from stutuz import db
@@ -27,11 +28,11 @@ class TestModel(Model):
 class ZODB(TestBase):
 
     def test_model_attributes(self):
-        """Model instantiates List and Mapping and factories"""
+        """Model instantiates factories when Model instantiated"""
 
         instance = TestModel()
-        self.assert_is_instance(instance.sequence, List)
-        self.assert_is_instance(instance.mapping, Mapping)
+        self.assert_is_instance(instance.sequence, PersistentList)
+        self.assert_is_instance(instance.mapping, PersistentMapping)
         self.assert_is_instance(instance.timestamp, datetime)
         self.assert_is_instance(instance.id, UUID)
         self.assert_is(instance.something_else, None)
@@ -40,8 +41,8 @@ class ZODB(TestBase):
         """Model init sets attributes with kwargs"""
 
         instance = TestModel(sequence=(1, 2, 3), mapping={'foo': 'bar'})
-        self.assert_is_instance(instance.sequence, List)
-        self.assert_is_instance(instance.mapping, Mapping)
+        self.assert_is_instance(instance.sequence, PersistentList)
+        self.assert_is_instance(instance.mapping, PersistentMapping)
         self.assert_sequence_equal(instance.sequence, (1, 2, 3))
         self.assert_is(instance.something_else, None)
 

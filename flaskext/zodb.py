@@ -128,6 +128,7 @@ class ZODB(object):
 
 class Factory(object):
     """Set a :class:`Model` attribute with a callable on instantiation.
+    Useful for delaying initiation of mutable or dynamic objects.
 
     ::
 
@@ -158,11 +159,11 @@ Timestamp = Factory(datetime.utcnow)
 #: UUID4 factory
 UUID4 = Factory(uuid4)
 
-#: Alias for :class:`persistent.list.PersistentList`
-List = PersistentList
+#: Factory for :class:`~persistent.list.PersistentList`
+List = Factory(PersistentList)
 
-#: Alias for :class:`persistent.mapping.PersistentMapping`
-Mapping = PersistentMapping
+#: Factory for :class:`~persistent.mapping.PersistentMapping`
+Mapping = Factory(PersistentMapping)
 
 
 class Model(Persistent):
@@ -197,10 +198,8 @@ class Model(Persistent):
     """
 
     def __init__(self, **kwargs):
-        mutable = (List, Mapping)
-        callable = (Factory,)
         for name, value in vars(self.__class__).items():
-            if value in mutable or isinstance(value, callable):
+            if isinstance(value, Factory):
                 setattr(self, name, value())
 
         for name, value in kwargs.iteritems():
@@ -208,9 +207,9 @@ class Model(Persistent):
                 attribute = getattr(self, name)
             except AttributeError:
                 attribute = None
-            if isinstance(attribute, List):
+            if isinstance(attribute, PersistentList):
                 attribute.extend(value)
-            elif isinstance(attribute, Mapping):
+            elif isinstance(attribute, PersistentMapping):
                 attribute.update(value)
             else:
                 setattr(self, name, value)
