@@ -10,9 +10,9 @@ from contextlib import contextmanager
 from datetime import datetime
 from uuid import uuid4
 
-from werkzeug import cached_property
+from werkzeug import cached_property, LocalProxy
 from ZODB.DB import DB
-from flask import g
+from flask import g, current_app
 import transaction
 from persistent import Persistent
 from persistent.list import PersistentList
@@ -219,3 +219,8 @@ class Model(Persistent):
         attributes = ', '.join('{0}={1!r}'.format(name, value)
             for (name, value) in vars(self).iteritems())
         return '{0}({1})'.format(self.__class__.__name__, attributes)
+
+
+#: The :class:`ZODB` instance for the current :class:`~flask.Flask`
+#: application.
+current_db = LocalProxy(lambda: current_app.extensions['zodb'])

@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 from datetime import datetime
 from uuid import UUID
 
-from flaskext.zodb import Model, List, Mapping, Timestamp, UUID4
+from flaskext.zodb import Model, List, Mapping, Timestamp, UUID4, current_db
 
 from stutuz.tests import TestBase
 from stutuz import db
@@ -73,3 +73,11 @@ class ZODB(TestBase):
 
         with db() as root:
             self.assert_equal(root['_test'], 'Written!')
+
+    def test_local_proxy(self):
+        """current_db proxies to the ZODB instance"""
+
+        self.assert_is(current_db.app, self.app)
+        self.assert_equal(self.app.extensions['zodb'], current_db)
+        self.assert_is(self.app.extensions['zodb'],
+                       current_db._get_current_object())
