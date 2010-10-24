@@ -6,6 +6,7 @@ from __future__ import with_statement
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from UserDict import IterableUserDict
 from contextlib import contextmanager
 from datetime import datetime
 from uuid import uuid4
@@ -23,7 +24,7 @@ __all__ = ('ZODB', 'Model', 'Factory',
            'List', 'Mapping', 'Timestamp', 'UUID4', 'current_db')
 
 
-class ZODB(object):
+class ZODB(IterableUserDict):
     """ZODB extension for Flask: persistence of native Python objects.
 
     Basic setup::
@@ -47,9 +48,11 @@ class ZODB(object):
             return render_template_string('Latest message: {{ message }}',
                                           message=db['message'])
 
-    During requests the ``db`` object can be used as a ``dict`` for setting,
-    getting and deleting keys. For other operations, ``db.root`` implements
-    the full ``dict`` interface.
+    During requests the ``db`` object acts like a Python ``dict``. Any changes
+    made to it *directly* will persist, changes made to mutable objects
+    within will have to be marked as mutated. This is done for you if you
+    inherit :class:`Model` for your own classes and use :attr:`List` and
+    :attr:`Mapping` as substitutes for Python's ``list`` and ``dict``.
 
     Outside of requests, the object can be used as a context manager if
     called, yielding the root object to be used inside the context.
@@ -80,6 +83,10 @@ class ZODB(object):
         """Root object for the request-local connection."""
         return self.connection.root()
 
+    @property
+    def data(self):
+        return self.root
+
     def init_app(self, app):
         assert 'ZODB_STORAGE' in app.config, \
                'ZODB_STORAGE must be configured.'
@@ -98,18 +105,6 @@ class ZODB(object):
             transaction.commit()
             self.connection.close()
             return response
-
-    def __setitem__(self, key, value):
-        """Set an item in the request-local root object."""
-        self.root[key] = value
-
-    def __getitem__(self, key):
-        """Get an item in the request-local root object."""
-        return self.root[key]
-
-    def __delitem__(self, key):
-        """Delete an item in the request-local root object."""
-        del self.root[key]
 
     @contextmanager
     def __call__(self):
