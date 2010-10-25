@@ -158,10 +158,10 @@ Timestamp = Factory(datetime.utcnow)
 #: UUID4 factory
 UUID4 = Factory(uuid4)
 
-#: Factory for :class:`~persistent.list.PersistentList`
+#: Factory for :func:`PersistentList`
 List = Factory(PersistentList)
 
-#: Factory for :class:`~persistent.mapping.PersistentMapping`
+#: Factory for :func:`PersistentMapping`
 Mapping = Factory(PersistentMapping)
 
 
