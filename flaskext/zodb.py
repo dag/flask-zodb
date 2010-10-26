@@ -197,7 +197,8 @@ class Model(Persistent):
     """
 
     def __init__(self, **kwargs):
-        for name, value in vars(self.__class__).items():
+        for name in dir(self):
+            value = getattr(self, name)
             if isinstance(value, Factory):
                 setattr(self, name, value())
 
