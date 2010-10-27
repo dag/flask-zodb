@@ -13,7 +13,7 @@ from flaskext.zodb import Model, List, Mapping, Timestamp, UUID4, current_db
 from flaskext.zodb import PersistentList, PersistentMapping
 
 from stutuz.tests import TestBase
-from stutuz import db
+from stutuz.extensions import db
 
 
 class TestModel(Model):
