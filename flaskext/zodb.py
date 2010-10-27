@@ -60,14 +60,28 @@ class ZODB(IterableUserDict):
 
     """
 
+    cb = None
+
     def __init__(self, app=None):
         self.app = app
         if app is not None:
             self.init_app(app)
 
+    def init(self, cb):
+        """Register a callback to be called with the root mapping when the
+        database is first loaded. Useful for setting defaults.
+
+        """
+        self.cb = cb
+        return cb
+
     @cached_property
     def db(self):
-        return DB(self.app.config['ZODB_STORAGE']())
+        db = DB(self.app.config['ZODB_STORAGE']())
+        if self.cb is not None:
+            with self.transaction(db) as root:
+                self.cb(root)
+        return db
 
     @property
     def connection(self):
@@ -107,6 +121,17 @@ class ZODB(IterableUserDict):
             return response
 
     @contextmanager
+    def transaction(self, db=None):
+        if db is None:
+            db = self.db
+        try:
+            connection = db.open()
+            transaction.begin()
+            yield connection.root()
+        finally:
+            transaction.commit()
+            connection.close()
+
     def __call__(self):
         """Transactional context, for database access outside of requests.
 
@@ -116,13 +141,7 @@ class ZODB(IterableUserDict):
                 root['this'] = 'is committed at the end of the context.'
 
         """
-        try:
-            connection = self.db.open()
-            transaction.begin()
-            yield connection.root()
-        finally:
-            transaction.commit()
-            connection.close()
+        return self.transaction()
 
 
 class Factory(object):
