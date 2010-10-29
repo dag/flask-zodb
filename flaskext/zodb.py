@@ -18,6 +18,7 @@ import transaction
 from persistent import Persistent
 from persistent.list import PersistentList
 from persistent.mapping import PersistentMapping
+from BTrees.OOBTree import OOBTree
 
 
 __all__ = ('ZODB', 'Model', 'Factory',
@@ -183,6 +184,10 @@ List = Factory(PersistentList)
 #: Factory for :func:`PersistentMapping`
 Mapping = Factory(PersistentMapping)
 
+#: Factory for an object-to-object balance tree mapping,
+#: a :class:`~BTrees.OOBTree.OOBTree`.
+BTree = Factory(OOBTree)
+
 
 class Model(Persistent):
     """Convinience model base.
@@ -228,7 +233,7 @@ class Model(Persistent):
                 attribute = None
             if isinstance(attribute, PersistentList):
                 attribute.extend(value)
-            elif isinstance(attribute, PersistentMapping):
+            elif isinstance(attribute, (PersistentMapping, OOBTree)):
                 attribute.update(value)
             else:
                 setattr(self, name, value)

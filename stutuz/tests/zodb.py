@@ -9,8 +9,9 @@ from __future__ import unicode_literals
 from datetime import datetime
 from uuid import UUID
 
-from flaskext.zodb import Model, List, Mapping, Timestamp, UUID4, current_db
-from flaskext.zodb import PersistentList, PersistentMapping
+from flaskext.zodb import (Model, List, Mapping, BTree,
+                           Timestamp, UUID4, current_db,
+                           PersistentList, PersistentMapping, OOBTree)
 
 from stutuz.tests import TestBase
 from stutuz.extensions import db
@@ -20,6 +21,7 @@ class TestModel(Model):
 
     sequence = List
     mapping = Mapping
+    btree = BTree
     timestamp = Timestamp
     id = UUID4
     something_else = None
@@ -33,6 +35,7 @@ class ZODB(TestBase):
         instance = TestModel()
         self.assert_is_instance(instance.sequence, PersistentList)
         self.assert_is_instance(instance.mapping, PersistentMapping)
+        self.assert_is_instance(instance.btree, OOBTree)
         self.assert_is_instance(instance.timestamp, datetime)
         self.assert_is_instance(instance.id, UUID)
         self.assert_is(instance.something_else, None)
@@ -40,9 +43,11 @@ class ZODB(TestBase):
     def test_model_kwargs(self):
         """Model init sets attributes with kwargs"""
 
-        instance = TestModel(sequence=(1, 2, 3), mapping={'foo': 'bar'})
+        instance = TestModel(sequence=(1, 2, 3), mapping={'foo': 'bar'},
+                             btree={'bar': 'foo'})
         self.assert_is_instance(instance.sequence, PersistentList)
         self.assert_is_instance(instance.mapping, PersistentMapping)
+        self.assert_is_instance(instance.btree, OOBTree)
         self.assert_sequence_equal(instance.sequence, (1, 2, 3))
         self.assert_is(instance.something_else, None)
 
