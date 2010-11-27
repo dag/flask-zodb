@@ -9,11 +9,13 @@ from __future__ import unicode_literals
 from datetime import datetime
 from uuid import UUID
 
+from flask import current_app
 from flaskext.zodb import (Model, List, Mapping, BTree,
                            Timestamp, UUID4, current_db,
                            PersistentList, PersistentMapping, OOBTree)
+from attest import Assert as _
 
-from stutuz.tests import TestBase
+from stutuz.tests.tools import flask_tests
 from stutuz.extensions import db
 
 
@@ -27,63 +29,74 @@ class TestModel(Model):
     something_else = None
 
 
-class ZODB(TestBase):
+suite = flask_tests()
 
-    def test_model_attributes(self):
-        """Model instantiates factories when Model instantiated"""
 
-        instance = TestModel()
-        self.assert_is_instance(instance.sequence, PersistentList)
-        self.assert_is_instance(instance.mapping, PersistentMapping)
-        self.assert_is_instance(instance.btree, OOBTree)
-        self.assert_is_instance(instance.timestamp, datetime)
-        self.assert_is_instance(instance.id, UUID)
-        self.assert_is(instance.something_else, None)
+@suite.test
+def model_attributes(client):
+    """Model instantiates factories when Model instantiated"""
 
-    def test_model_kwargs(self):
-        """Model init sets attributes with kwargs"""
+    instance = _(TestModel())
+    assert instance.sequence.__class__.is_(PersistentList)
+    assert instance.mapping.__class__.is_(PersistentMapping)
+    assert instance.btree.__class__.is_(OOBTree)
+    assert instance.timestamp.__class__.is_(datetime)
+    assert instance.id.__class__.is_(UUID)
+    assert instance.something_else.is_(None)
 
-        instance = TestModel(sequence=(1, 2, 3), mapping={'foo': 'bar'},
-                             btree={'bar': 'foo'})
-        self.assert_is_instance(instance.sequence, PersistentList)
-        self.assert_is_instance(instance.mapping, PersistentMapping)
-        self.assert_is_instance(instance.btree, OOBTree)
-        self.assert_sequence_equal(instance.sequence, (1, 2, 3))
-        self.assert_is(instance.something_else, None)
 
-        instance = TestModel(other='foo', something_else=123)
-        self.assert_equal(instance.other, 'foo')
-        self.assert_equal(instance.something_else, 123)
+@suite.test
+def model_kwargs():
+    """Model init sets attributes with kwargs"""
 
-    def test_read(self):
-        """Views can read from the database"""
+    instance = _(TestModel(sequence=(1, 2, 3),
+                           mapping={'foo': 'bar'},
+                           btree={'bar': 'foo'}))
+    assert instance.sequence.__class__.is_(PersistentList)
+    assert instance.mapping.__class__.is_(PersistentMapping)
+    assert instance.btree.__class__.is_(OOBTree)
+    assert instance.sequence ==  [1, 2, 3]
+    assert instance.something_else.is_(None)
 
-        with db() as root:
-            root['_test'] = 'Victory!'
+    instance = _(TestModel(other='foo', something_else=123))
+    assert instance.other == 'foo'
+    assert instance.something_else == 123
 
-        @self.app.route('/_test/')
-        def read_value():
-            return db['_test']
 
-        rv = self.client.get('/_test/')
-        self.assert_equal(rv.data, 'Victory!')
+@suite.test
+def read(client):
+    """Views can read from the database"""
 
-    def test_write(self):
-        """Views can write to the database"""
+    with db() as root:
+        root['_test'] = 'Victory!'
 
-        @self.app.route('/_test/<value>')
-        def write_value(value):
-            db['_test'] = value
+    @current_app.route('/_test/')
+    def read_value():
+        return db['_test']
 
-        self.client.get('/_test/Written!')
+    response = client.get('/_test/')
+    assert response.data == 'Victory!'
 
-        with db() as root:
-            self.assert_equal(root['_test'], 'Written!')
 
-    def test_local_proxy(self):
-        """current_db proxies to the ZODB instance"""
+@suite.test
+def write(client):
+    """Views can write to the database"""
 
-        self.assert_is(current_db.app, self.app)
-        self.assert_equal(self.app.extensions['zodb'], current_db)
-        self.assert_is(self.app.extensions['zodb'],
-                       current_db._get_current_object())
+    @current_app.route('/_test/<value>')
+    def write_value(value):
+        db['_test'] = value
+
+    client.get('/_test/Written!')
+
+    with db() as root:
+        assert _(root['_test']) == 'Written!'
+
+
+@suite.test
+def local_proxy():
+    """current_db proxies to the ZODB instance"""
+
+    assert _(current_db.app).is_(current_app._get_current_object())
+    assert _(current_app.extensions['zodb']) == current_db
+    assert _(current_app.extensions['zodb']).is_(
+             current_db._get_current_object())
