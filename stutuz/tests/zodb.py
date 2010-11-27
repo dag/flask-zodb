@@ -55,7 +55,7 @@ def model_kwargs():
     assert instance.sequence.__class__.is_(PersistentList)
     assert instance.mapping.__class__.is_(PersistentMapping)
     assert instance.btree.__class__.is_(OOBTree)
-    assert instance.sequence ==  [1, 2, 3]
+    assert instance.sequence == [1, 2, 3]
     assert instance.something_else.is_(None)
 
     instance = _(TestModel(other='foo', something_else=123))
