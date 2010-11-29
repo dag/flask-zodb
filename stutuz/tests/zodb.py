@@ -13,7 +13,7 @@ from flask import current_app
 from flaskext.zodb import (Model, List, Mapping, BTree,
                            Timestamp, UUID4, current_db,
                            PersistentList, PersistentMapping, OOBTree)
-from attest import Assert as _
+from attest import Assert as var
 
 from stutuz.tests.tools import flask_tests
 from stutuz.extensions import db
@@ -36,7 +36,7 @@ suite = flask_tests()
 def model_attributes(client):
     """Model instantiates factories when Model instantiated"""
 
-    instance = _(TestModel())
+    instance = var(TestModel())
     assert instance.sequence.__class__.is_(PersistentList)
     assert instance.mapping.__class__.is_(PersistentMapping)
     assert instance.btree.__class__.is_(OOBTree)
@@ -49,7 +49,7 @@ def model_attributes(client):
 def model_kwargs():
     """Model init sets attributes with kwargs"""
 
-    instance = _(TestModel(sequence=(1, 2, 3),
+    instance = var(TestModel(sequence=(1, 2, 3),
                            mapping={'foo': 'bar'},
                            btree={'bar': 'foo'}))
     assert instance.sequence.__class__.is_(PersistentList)
@@ -58,7 +58,7 @@ def model_kwargs():
     assert instance.sequence == [1, 2, 3]
     assert instance.something_else.is_(None)
 
-    instance = _(TestModel(other='foo', something_else=123))
+    instance = var(TestModel(other='foo', something_else=123))
     assert instance.other == 'foo'
     assert instance.something_else == 123
 
@@ -89,14 +89,14 @@ def write(client):
     client.get('/_test/Written!')
 
     with db() as root:
-        assert _(root['_test']) == 'Written!'
+        assert var(root['_test']) == 'Written!'
 
 
 @suite.test
 def local_proxy():
     """current_db proxies to the ZODB instance"""
 
-    assert _(current_db.app).is_(current_app._get_current_object())
-    assert _(current_app.extensions['zodb']) == current_db
-    assert _(current_app.extensions['zodb']).is_(
+    assert var(current_db.app).is_(current_app._get_current_object())
+    assert var(current_app.extensions['zodb']) == current_db
+    assert var(current_app.extensions['zodb']).is_(
              current_db._get_current_object())
