@@ -15,7 +15,7 @@ from flaskext.zodb import (Model, List, Mapping, BTree,
                            PersistentList, PersistentMapping, OOBTree)
 from attest import Assert as var
 
-from stutuz.tests.tools import flask_tests
+from tests.tools import flask_tests
 from stutuz.extensions import db
 
 
