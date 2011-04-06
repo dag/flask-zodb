@@ -1,14 +1,19 @@
+from flask import Flask, Module, request, Response, current_app
+from attest import Tests, assert_hook
+
+from flaskext.attest import request_context
+from flaskext.zodb import ZODB, current_db
+
 from datetime import datetime
 from uuid import UUID
-
-from flask import current_app
-from flaskext.zodb import (Model, List, Mapping, BTree,
-                           Timestamp, UUID4, current_db,
+from flaskext.zodb import (Model, List, Mapping, BTree, Timestamp, UUID4,
                            PersistentList, PersistentMapping, OOBTree)
-from attest import Assert as var
 
-from tests.tools import flask_tests
-from stutuz.extensions import db
+from ZODB.DemoStorage import DemoStorage
+
+
+TESTING = True
+ZODB_STORAGE = DemoStorage
 
 
 class TestModel(Model):
@@ -21,74 +26,83 @@ class TestModel(Model):
     something_else = None
 
 
-suite = flask_tests()
+models = Tests()
 
+@models.test
+def init_empty():
+    instance = TestModel()
+    assert type(instance.sequence) is PersistentList
+    assert type(instance.mapping) is PersistentMapping
+    assert type(instance.btree) is OOBTree
+    assert type(instance.timestamp) is datetime
+    assert type(instance.id) is UUID
+    assert instance.something_else is None
 
-@suite.test
-def model_attributes(client):
-    """Model instantiates factories when Model instantiated"""
-
-    instance = var(TestModel())
-    assert instance.sequence.__class__.is_(PersistentList)
-    assert instance.mapping.__class__.is_(PersistentMapping)
-    assert instance.btree.__class__.is_(OOBTree)
-    assert instance.timestamp.__class__.is_(datetime)
-    assert instance.id.__class__.is_(UUID)
-    assert instance.something_else.is_(None)
-
-
-@suite.test
+@models.test
 def model_kwargs():
-    """Model init sets attributes with kwargs"""
-
-    instance = var(TestModel(sequence=(1, 2, 3),
-                           mapping={'foo': 'bar'},
-                           btree={'bar': 'foo'}))
-    assert instance.sequence.__class__.is_(PersistentList)
-    assert instance.mapping.__class__.is_(PersistentMapping)
-    assert instance.btree.__class__.is_(OOBTree)
+    instance = TestModel(sequence=(1, 2, 3),
+                         mapping={'foo': 'bar'},
+                         btree={'bar': 'foo'})
+    assert type(instance.sequence) is PersistentList
+    assert type(instance.mapping) is PersistentMapping
+    assert type(instance.btree) is OOBTree
     assert instance.sequence == [1, 2, 3]
-    assert instance.something_else.is_(None)
+    assert instance.something_else is None
 
-    instance = var(TestModel(other='foo', something_else=123))
+    instance = TestModel(other='foo', something_else=123)
     assert instance.other == 'foo'
     assert instance.something_else == 123
 
 
-@suite.test
-def read(client):
-    """Views can read from the database"""
+db = ZODB()
+mod = Module(__name__, name='tests')
 
+@mod.route('/write/')
+def store():
+    db['data'] = request.args['data']
+    return 'Success'
+
+@mod.route('/read/')
+def retrieve():
+    return db['data']
+
+
+@request_context
+def testapp():
+    app = Flask(__name__)
+    app.config.from_object(__name__)
+    app.register_module(mod)
+    db.init_app(app)
+    return app
+
+zodb = Tests(contexts=[testapp])
+
+@zodb.context
+def connection():
+    current_app.preprocess_request()
+    try:
+        yield
+    finally:
+        current_app.process_response(Response())
+
+
+@zodb.test
+def read_write(client):
+    response = client.get('/write/', query_string={'data': 'Hello'})
+    assert response == Response('Success')
     with db() as root:
-        root['_test'] = 'Victory!'
+        assert root['data'] == 'Hello'
+    response = client.get('/read/')
+    assert response == Response('Hello')
 
-    @current_app.route('/_test/')
-    def read_value():
-        return db['_test']
-
-    response = client.get('/_test/')
-    assert response.data == 'Victory!'
-
-
-@suite.test
-def write(client):
-    """Views can write to the database"""
-
-    @current_app.route('/_test/<value>')
-    def write_value(value):
-        db['_test'] = value
-
-    client.get('/_test/Written!')
-
-    with db() as root:
-        assert var(root['_test']) == 'Written!'
-
-
-@suite.test
+@zodb.test
 def local_proxy():
-    """current_db proxies to the ZODB instance"""
+    assert current_db.app is current_app._get_current_object()
+    assert current_app.extensions['zodb'] == current_db
+    assert current_app.extensions['zodb'] is current_db._get_current_object()
 
-    assert var(current_db.app).is_(current_app._get_current_object())
-    assert var(current_app.extensions['zodb']) == current_db
-    assert var(current_app.extensions['zodb']).is_(
-             current_db._get_current_object())
+
+all = Tests([models, zodb])
+
+if __name__ == '__main__':
+    all.main()
