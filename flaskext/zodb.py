@@ -105,27 +105,17 @@ class ZODB(IterableUserDict):
             self.connection.close()
 
     @contextmanager
-    def transaction(self, db=None):
-        if db is None:
-            db = self.db
+    def transaction(self):
+        connection = self.db.open()
+        transaction.begin()
         try:
-            connection = db.open()
-            transaction.begin()
             yield connection.root()
-        finally:
+        except:
+            transaction.abort()
+        else:
             transaction.commit()
+        finally:
             connection.close()
-
-    def __call__(self):
-        """Transactional context, for database access outside of requests.
-
-        ::
-
-            with db() as root:
-                root['this'] = 'is committed at the end of the context.'
-
-        """
-        return self.transaction()
 
 
 class Factory(object):

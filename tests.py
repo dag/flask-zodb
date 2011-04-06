@@ -82,7 +82,7 @@ zodb = Tests(contexts=[testapp])
 def read_write(client):
     response = client.get('/write/', query_string={'data': 'Hello'})
     assert response == Response('Success')
-    with db() as root:
+    with db.transaction() as root:
         assert root['data'] == 'Hello'
     response = client.get('/read/')
     assert response == Response('Hello')
