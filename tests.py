@@ -9,11 +9,13 @@ from uuid import UUID
 from flaskext.zodb import (Model, List, Mapping, BTree, Timestamp, UUID4,
                            PersistentList, PersistentMapping, OOBTree)
 
-from ZODB.DemoStorage import DemoStorage
+import tempfile
+from os import path
+import shutil
+from ZODB.FileStorage import FileStorage
 
 
 TESTING = True
-ZODB_STORAGE = DemoStorage
 
 
 class TestModel(Model):
@@ -69,11 +71,17 @@ def retrieve():
 
 @request_context
 def testapp():
+    tmpdir = tempfile.mkdtemp()
+    dbfile = path.join(tmpdir, 'test.db')
     app = Flask(__name__)
     app.config.from_object(__name__)
+    app.config['ZODB_STORAGE'] = lambda: FileStorage(dbfile)
     app.register_module(mod)
     db.init_app(app)
-    return app
+    try:
+        yield app
+    finally:
+        shutil.rmtree(tmpdir)
 
 zodb = Tests(contexts=[testapp])
 
