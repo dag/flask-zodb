@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from werkzeug import cached_property, LocalProxy
 from ZODB.DB import DB
-from flask import g, current_app
+from flask import _request_ctx_stack, current_app
 import transaction
 from persistent import Persistent
 from persistent.list import PersistentList
@@ -79,11 +79,10 @@ class ZODB(IterableUserDict):
     @property
     def connection(self):
         """Request-local database connection."""
-        return g._zodb_connection
-
-    @connection.setter
-    def connection(self, new):
-        g._zodb_connection = new
+        if not hasattr(current_ctx, 'zodb_connection'):
+            current_ctx.zodb_connection = self.db.open()
+            transaction.begin()
+        return current_ctx.zodb_connection
 
     @property
     def root(self):
@@ -102,16 +101,13 @@ class ZODB(IterableUserDict):
             app.extensions = {}
         app.extensions['zodb'] = self
 
-        @app.before_request
-        def open_db():
-            self.connection = self.db.open()
-            transaction.begin()
-
-        @app.after_request
-        def close_db(response):
-            transaction.commit()
+        @app.teardown_request
+        def close_db(exception):
+            if exception is None:
+                transaction.commit()
+            else:
+                transaction.abort()
             self.connection.close()
-            return response
 
     @contextmanager
     def transaction(self, db=None):
@@ -239,3 +235,6 @@ class Model(Persistent):
 #: The :class:`ZODB` instance for the current :class:`~flask.Flask`
 #: application.
 current_db = LocalProxy(lambda: current_app.extensions['zodb'])
+
+
+current_ctx = LocalProxy(lambda: _request_ctx_stack.top)

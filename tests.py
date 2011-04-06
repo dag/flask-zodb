@@ -2,7 +2,7 @@ from flask import Flask, Module, request, Response, current_app
 from attest import Tests, assert_hook
 
 from flaskext.attest import request_context
-from flaskext.zodb import ZODB, current_db
+from flaskext.zodb import ZODB, current_db, current_ctx
 
 from datetime import datetime
 from uuid import UUID
@@ -77,14 +77,6 @@ def testapp():
 
 zodb = Tests(contexts=[testapp])
 
-@zodb.context
-def connection():
-    current_app.preprocess_request()
-    try:
-        yield
-    finally:
-        current_app.process_response(Response())
-
 
 @zodb.test
 def read_write(client):
@@ -94,6 +86,12 @@ def read_write(client):
         assert root['data'] == 'Hello'
     response = client.get('/read/')
     assert response == Response('Hello')
+
+@zodb.test
+def request_ctx():
+    assert not hasattr(current_ctx, 'zodb_connection')
+    db['data'] = 'value'
+    assert hasattr(current_ctx, 'zodb_connection')
 
 @zodb.test
 def local_proxy():
