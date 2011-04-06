@@ -53,28 +53,14 @@ class ZODB(IterableUserDict):
 
     """
 
-    cb = None
-
     def __init__(self, app=None):
         self.app = app
         if app is not None:
             self.init_app(app)
 
-    def init(self, cb):
-        """Register a callback to be called with the root mapping when the
-        database is first loaded. Useful for setting defaults.
-
-        """
-        self.cb = cb
-        return cb
-
     @cached_property
     def db(self):
-        db = DB(self.app.config['ZODB_STORAGE']())
-        if self.cb is not None:
-            with self.transaction(db) as root:
-                self.cb(root)
-        return db
+        return DB(self.app.config['ZODB_STORAGE']())
 
     @property
     def connection(self):
@@ -84,14 +70,23 @@ class ZODB(IterableUserDict):
             transaction.begin()
         return current_ctx.zodb_connection
 
+    def get_root(self, root):
+        return root
+
+    def root_factory(self, get_root):
+        self.get_root = get_root
+        return get_root
+
     @property
     def root(self):
         """Root object for the request-local connection."""
-        return self.connection.root()
+        if not hasattr(current_ctx, 'zodb_root'):
+            current_ctx.zodb_root = self.get_root(self.connection.root())
+        return current_ctx.zodb_root
 
     @property
     def data(self):
-        return self.root
+        return self.connection.root()
 
     def init_app(self, app):
         assert 'ZODB_STORAGE' in app.config, \

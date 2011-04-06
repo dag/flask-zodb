@@ -94,6 +94,18 @@ def request_ctx():
     assert hasattr(current_ctx, 'zodb_connection')
 
 @zodb.test
+def root_factory():
+    @db.root_factory
+    def get_root(root):
+        root['approot'] = 'got root?'
+        return root['approot']
+    assert 'approot' not in db
+    assert not hasattr(current_ctx, 'zodb_root')
+    assert db.root == 'got root?'
+    assert db['approot'] == 'got root?'
+    assert hasattr(current_ctx, 'zodb_root')
+
+@zodb.test
 def local_proxy():
     assert current_db.app is current_app._get_current_object()
     assert current_app.extensions['zodb'] == current_db
