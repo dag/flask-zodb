@@ -108,6 +108,7 @@ class ZODB(IterableUserDict):
             yield connection.root()
         except:
             transaction.abort()
+            raise
         else:
             transaction.commit()
         finally:
