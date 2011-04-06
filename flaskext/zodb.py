@@ -13,10 +13,6 @@ from persistent.mapping import PersistentMapping
 from BTrees.OOBTree import OOBTree
 
 
-__all__ = ('ZODB', 'Model', 'Factory',
-           'List', 'Mapping', 'Timestamp', 'UUID4', 'current_db')
-
-
 class ZODB(IterableUserDict):
     """ZODB extension for Flask: persistence of native Python objects.
 
