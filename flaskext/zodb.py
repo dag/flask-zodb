@@ -1,5 +1,5 @@
 from UserDict import IterableUserDict
-from contextlib import contextmanager
+from contextlib import contextmanager, closing
 from datetime import datetime
 from uuid import uuid4
 
@@ -102,17 +102,9 @@ class ZODB(IterableUserDict):
 
     @contextmanager
     def transaction(self):
-        connection = self.db.open()
-        transaction.begin()
-        try:
-            yield connection.root()
-        except:
-            transaction.abort()
-            raise
-        else:
-            transaction.commit()
-        finally:
-            connection.close()
+        with closing(self.db.open()) as connection:
+            with transaction:
+                yield connection.root()
 
 
 class Factory(object):
