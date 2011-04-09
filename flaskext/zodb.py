@@ -70,12 +70,34 @@ class ZODB(IterableUserDict):
         return root
 
     def root_factory(self, get_root):
+        """Decorator for setting the root factory, a function that receives
+        the root object and returns an object inside it, to be used as an
+        artificial root. Can be used to set defaults and for using
+        different root objects for different requests - Flask's
+        context-locals can be accessed in here.
+
+        ::
+
+            class Root(Model):
+                pass
+
+            @db.root_factory
+            def get_root(root):
+                return root.setdefault('myapp', Root())
+
+            with app.test_request_context():
+                assert db.root is db['myapp']
+
+        The default root factory simply returns the root as-is.
+
+        """
         self.get_root = get_root
         return get_root
 
     @property
     def root(self):
-        """Root object for the request-local connection."""
+        """Root object for the request, as defined by the
+        :meth:`~flaskext.zodb.ZODB.root_factory`."""
         if not hasattr(current_ctx, 'zodb_root'):
             current_ctx.zodb_root = self.get_root(self.connection.root())
         return current_ctx.zodb_root
