@@ -139,14 +139,14 @@ Timestamp = Factory(datetime.utcnow)
 #: UUID4 factory
 UUID4 = Factory(uuid4)
 
-#: Factory for :func:`PersistentList`
+#: Factory for :class:`~persistent.list.PersistentList`
 List = Factory(PersistentList)
 
-#: Factory for :func:`PersistentMapping`
+#: Factory for :class:`~persistent.mapping.PersistentMapping`
 Mapping = Factory(PersistentMapping)
 
-#: Factory for an object-to-object balance tree mapping,
-#: a :class:`~BTrees.OOBTree.OOBTree`.
+#: Factory for an object-to-object balanced tree mapping,
+#: an :class:`~BTrees.OOBTree.OOBTree`.
 BTree = Factory(OOBTree)
 
 
