@@ -45,7 +45,6 @@ class ZODB(IterableUserDict):
 
     Outside of requests, the object can be used as a context manager if
     called, yielding the root object to be used inside the context.
-    See :meth:`__call__`.
 
     """
 
@@ -103,6 +102,16 @@ class ZODB(IterableUserDict):
 
     @contextmanager
     def transaction(self):
+        """Context manager for a transaction bound connection. Returns the
+        root object of the storage. Can be used for transactions outside of
+        requests.
+
+        ::
+
+            with db.transaction() as root:
+                root['key'] = value
+
+        """
         with closing(self.db.open()) as connection:
             with transaction:
                 yield connection.root()
