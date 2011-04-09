@@ -189,10 +189,10 @@ BTree = Factory(OOBTree)
 
 
 class Model(Persistent):
-    """Convinience model base.
+    """Convenience model base.
 
-    You can subclass :class:`persistent.Persistent` directly if you prefer,
-    but this base provides some conviniences.
+    You can subclass :class:`~persistent.Persistent` directly if you
+    prefer, but this base provides some conveniences.
 
     Set attributes in instantiation:
 
@@ -215,14 +215,19 @@ class Model(Persistent):
     >>> type(Post().comments)
     <class 'persistent.list.PersistentList'>
 
+    The latter works even if you override :meth:`__init__`.
+
     """
 
-    def __init__(self, **kwargs):
+    def __new__(cls, *args, **kwargs):
+        self = Persistent.__new__(cls, *args, **kwargs)
         for name in dir(self):
             value = getattr(self, name)
             if isinstance(value, Factory):
                 setattr(self, name, value())
+        return self
 
+    def __init__(self, **kwargs):
         for name, value in kwargs.iteritems():
             try:
                 attribute = getattr(self, name)

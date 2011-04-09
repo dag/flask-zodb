@@ -27,6 +27,13 @@ class TestModel(Model):
     id = UUID4
     something_else = None
 
+class CustomInitModel(Model):
+
+    sequence = List
+
+    def __init__(self, sequence):
+        self.sequence.extend(sequence)
+
 
 models = Tests()
 
@@ -54,6 +61,12 @@ def model_kwargs():
     instance = TestModel(other='foo', something_else=123)
     assert instance.other == 'foo'
     assert instance.something_else == 123
+
+@models.test
+def custom_init():
+    instance = CustomInitModel([1,2,3])
+    assert type(instance.sequence) is PersistentList
+    assert instance.sequence == [1, 2, 3]
 
 
 db = ZODB()
