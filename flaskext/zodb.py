@@ -14,7 +14,8 @@ from BTrees.OOBTree import OOBTree
 
 
 class ZODB(IterableUserDict):
-    """Initialize extension.
+    """Initialize extension. Acts like a :class:`dict` during requests,
+    proxying the root mapping of the configured storage.
 
     ::
 
