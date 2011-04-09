@@ -14,37 +14,15 @@ from BTrees.OOBTree import OOBTree
 
 
 class ZODB(IterableUserDict):
-    """ZODB extension for Flask: persistence of native Python objects.
+    """Initialize extension.
 
-    Basic setup::
-
-        from ZODB.FileStorage import FileStorage
-        from flask import Flask, redirect, render_template_string
-        from flaskext.zodb import ZODB
-
-        ZODB_STORAGE = lambda: FileStorage('app.fs')
+    ::
 
         app = Flask(__name__)
-        app.config.from_object(__name__)
         db = ZODB(app)
 
-        @app.route('/')
-        @app.route('/<message>')
-        def index(message=None):
-            if message is not None:
-                db['message'] = message
-                return redirect('/')
-            return render_template_string('Latest message: {{ message }}',
-                                          message=db['message'])
-
-    During requests the ``db`` object acts like a Python ``dict``. Any changes
-    made to it *directly* will persist, changes made to mutable objects
-    within will have to be marked as mutated. This is done for you if you
-    inherit :class:`Model` for your own classes and use :attr:`List` and
-    :attr:`Mapping` as substitutes for Python's ``list`` and ``dict``.
-
-    Outside of requests, the object can be used as a context manager if
-    called, yielding the root object to be used inside the context.
+    Optionally you can create the extension object first and set up the
+    application later with :meth:`init_app`.
 
     """
 
@@ -53,6 +31,36 @@ class ZODB(IterableUserDict):
     def __init__(self, app=None):
         if app is not None:
             self.init_app(app)
+
+    def init_app(self, app):
+        """Bind this extension object to a Flask application and configure
+        it. Useful for `application factories
+        <http://flask.pocoo.org/docs/patterns/appfactories/>`_.
+
+        ::
+
+            db = ZODB()
+
+            def create_app():
+                app = Flask(__name__)
+                db.init_app(app)
+                return app
+
+        """
+        assert 'ZODB_STORAGE' in app.config, \
+               'ZODB_STORAGE must be configured.'
+        self.app = app
+        if not hasattr(app, 'extensions'):
+            app.extensions = {}
+        app.extensions['zodb'] = self
+
+        @app.teardown_request
+        def close_db(exception):
+            if exception is None:
+                transaction.commit()
+            else:
+                transaction.abort()
+            self.connection.close()
 
     @cached_property
     def db(self):
@@ -97,7 +105,7 @@ class ZODB(IterableUserDict):
     @property
     def root(self):
         """Root object for the request, as defined by the
-        :meth:`~flaskext.zodb.ZODB.root_factory`."""
+        :meth:`root_factory`."""
         if not hasattr(current_ctx, 'zodb_root'):
             current_ctx.zodb_root = self.get_root(self.connection.root())
         return current_ctx.zodb_root
@@ -105,22 +113,6 @@ class ZODB(IterableUserDict):
     @property
     def data(self):
         return self.connection.root()
-
-    def init_app(self, app):
-        assert 'ZODB_STORAGE' in app.config, \
-               'ZODB_STORAGE must be configured.'
-        self.app = app
-        if not hasattr(app, 'extensions'):
-            app.extensions = {}
-        app.extensions['zodb'] = self
-
-        @app.teardown_request
-        def close_db(exception):
-            if exception is None:
-                transaction.commit()
-            else:
-                transaction.abort()
-            self.connection.close()
 
     @contextmanager
     def transaction(self):
