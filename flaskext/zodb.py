@@ -146,48 +146,6 @@ class ZODB(IterableUserDict):
                 yield connection.root()
 
 
-class Factory(object):
-    """Set a :class:`Model` attribute with a callable on instantiation.
-    Useful for delaying initiation of mutable or dynamic objects.
-
-    ::
-
-        class Dice(Model):
-            side = Factory(random.randint, 1, 6)
-
-    >>> Dice()
-    Dice(side=3)
-    >>> Dice()
-    Dice(side=5)
-
-    """
-
-    def __init__(self, callable, *args, **kwargs):
-        self.callable = callable
-        self.args = args
-        self.kwargs = kwargs
-
-    def __call__(self):
-        return self.callable(*self.args, **self.kwargs)
-
-
-#: UTC timestamp factory
-Timestamp = Factory(datetime.utcnow)
-
-#: UUID4 factory
-UUID4 = Factory(uuid4)
-
-#: Factory for :class:`~persistent.list.PersistentList`
-List = Factory(PersistentList)
-
-#: Factory for :class:`~persistent.mapping.PersistentMapping`
-Mapping = Factory(PersistentMapping)
-
-#: Factory for an object-to-object balanced tree mapping,
-#: an :class:`~BTrees.OOBTree.OOBTree`.
-BTree = Factory(OOBTree)
-
-
 class Model(Persistent):
     """Convenience model base.
 
@@ -246,9 +204,50 @@ class Model(Persistent):
         return '{0}({1})'.format(self.__class__.__name__, attributes)
 
 
+class Factory(object):
+    """Set a :class:`Model` attribute with a callable on instantiation.
+    Useful for delaying initiation of mutable or dynamic objects.
+
+    ::
+
+        class Dice(Model):
+            side = Factory(random.randint, 1, 6)
+
+    >>> Dice()
+    Dice(side=3)
+    >>> Dice()
+    Dice(side=5)
+
+    """
+
+    def __init__(self, callable, *args, **kwargs):
+        self.callable = callable
+        self.args = args
+        self.kwargs = kwargs
+
+    def __call__(self):
+        return self.callable(*self.args, **self.kwargs)
+
+
+#: UTC timestamp factory
+Timestamp = Factory(datetime.utcnow)
+
+#: UUID4 factory
+UUID4 = Factory(uuid4)
+
+#: Factory for :class:`~persistent.list.PersistentList`
+List = Factory(PersistentList)
+
+#: Factory for :class:`~persistent.mapping.PersistentMapping`
+Mapping = Factory(PersistentMapping)
+
+#: Factory for an object-to-object balanced tree mapping,
+#: an :class:`~BTrees.OOBTree.OOBTree`.
+BTree = Factory(OOBTree)
+
+
 #: The :class:`ZODB` instance for the current :class:`~flask.Flask`
 #: application.
 current_db = LocalProxy(lambda: current_app.extensions['zodb'])
-
 
 current_ctx = LocalProxy(lambda: _request_ctx_stack.top)
