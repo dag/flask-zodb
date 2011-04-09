@@ -1,7 +1,7 @@
 Flask-ZODB
 ==========
 
-.. currentmodule:: flaskext.zodb
+.. module:: flaskext.zodb
 
 ZODB extension for Flask: persistence of native Python objects.
 
@@ -65,17 +65,39 @@ Core
 Optional Conveniences for Persistent Objects
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: flaskext.zodb
-    :members: Model, Factory, BTree, List, Mapping, Timestamp, UUID4
+.. autoclass:: Model
+
+.. autoclass:: Factory
+
+.. autodata:: BTree
+
+.. autodata:: List
+
+.. autodata:: Mapping
+
+.. autodata:: Timestamp
+
+.. autodata:: UUID
 
 
 Persistent Objects and Balanced Trees
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. class:: persistent.Persistent
+.. module:: persistent
 
-.. class:: persistent.list.PersistentList
+.. class:: Persistent
 
-.. class:: persistent.mapping.PersistentMapping
 
-.. class:: BTrees.OOBTree.OOBTree
+.. module:: persistent.list
+
+.. class:: PersistentList
+
+
+.. module:: persistent.mapping
+
+.. class:: PersistentMapping
+
+
+.. module:: BTrees.OOBTree
+
+.. class:: OOBTree
