@@ -5,8 +5,8 @@ from flaskext.attest import request_context
 from flaskext.zodb import ZODB, current_db, current_ctx
 
 from datetime import datetime
-from uuid import UUID
-from flaskext.zodb import (Model, List, Mapping, BTree, Timestamp, UUID4,
+import uuid
+from flaskext.zodb import (Model, List, Mapping, BTree, Timestamp, UUID,
                            PersistentList, PersistentMapping, OOBTree)
 
 import tempfile
@@ -24,7 +24,7 @@ class TestModel(Model):
     mapping = Mapping
     btree = BTree
     timestamp = Timestamp
-    id = UUID4
+    id = UUID
     something_else = None
 
 class CustomInitModel(Model):
@@ -44,7 +44,7 @@ def init_empty():
     assert type(instance.mapping) is PersistentMapping
     assert type(instance.btree) is OOBTree
     assert type(instance.timestamp) is datetime
-    assert type(instance.id) is UUID
+    assert type(instance.id) is uuid.UUID
     assert instance.something_else is None
 
 @models.test

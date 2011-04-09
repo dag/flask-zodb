@@ -162,7 +162,7 @@ class Model(Persistent):
     Declare mutable and dynamic attributes in the class definition::
 
         class Post(Model):
-            id = UUID4
+            id = UUID
             posted_on = Timestamp
             comments = List
 
@@ -229,16 +229,16 @@ class Factory(object):
         return self.callable(*self.args, **self.kwargs)
 
 
-#: UTC timestamp factory
+#: UTC datetime timestamp factory.
 Timestamp = Factory(datetime.utcnow)
 
-#: UUID4 factory
-UUID4 = Factory(uuid4)
+#: Version 4 UUID factory.
+UUID = Factory(uuid4)
 
-#: Factory for :class:`~persistent.list.PersistentList`
+#: Factory for :class:`~persistent.list.PersistentList`.
 List = Factory(PersistentList)
 
-#: Factory for :class:`~persistent.mapping.PersistentMapping`
+#: Factory for :class:`~persistent.mapping.PersistentMapping`.
 Mapping = Factory(PersistentMapping)
 
 #: Factory for an object-to-object balanced tree mapping,
