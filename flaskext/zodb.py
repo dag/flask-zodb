@@ -94,10 +94,10 @@ class ZODB(IterableUserDict):
 
     def root_factory(self, get_root):
         """Decorator for setting the root factory, a function that receives
-        the root object and returns an object inside it, to be used as an
-        artificial root. Can be used to set defaults and for using
-        different root objects for different requests - Flask's
-        context-locals can be accessed in here.
+        the real root object and returns an object inside it, to be used as
+        a virtual root. Can be used to set defaults and for using different
+        root objects for different requests - Flask's context-locals can be
+        accessed in here.
 
         ::
 
