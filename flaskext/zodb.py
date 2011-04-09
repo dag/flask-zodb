@@ -68,8 +68,7 @@ class ZODB(IterableUserDict):
         """The connection pool for your storage. You can safely ignore
         this.
 
-        .. admonition:: API Reference
-
+        :Reference:
             `ZODB.DB.DB
             <http://docs.zope.org/zope3/Code/ZODB/DB/DB/>`_
 
@@ -80,8 +79,7 @@ class ZODB(IterableUserDict):
     def connection(self):
         """Request-local database connection. You can safely ignore this.
 
-        .. admonition:: API Reference
-
+        :Reference:
             `ZODB.Connection.Connection
             <http://docs.zope.org/zope3/Code/ZODB/Connection/Connection/>`_
 
