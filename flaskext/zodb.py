@@ -117,12 +117,10 @@ class Factory(object):
         class Dice(Model):
             side = Factory(random.randint, 1, 6)
 
-    ::
-
-        >>> Dice()
-        Dice(side=3)
-        >>> Dice()
-        Dice(side=5)
+    >>> Dice()
+    Dice(side=3)
+    >>> Dice()
+    Dice(side=5)
 
     """
 
@@ -158,12 +156,12 @@ class Model(Persistent):
     You can subclass :class:`persistent.Persistent` directly if you prefer,
     but this base provides some conviniences.
 
-    Set attributes in instantiation::
+    Set attributes in instantiation:
 
-        >>> Model(title='Hello!')
-        Model(title='Hello!')
-        >> Model(title='Hello!').title
-        'Hello!'
+    >>> Model(title='Hello!')
+    Model(title='Hello!')
+    >>> Model(title='Hello!').title
+    'Hello!'
 
     Declare mutable and dynamic attributes in the class definition::
 
@@ -172,14 +170,12 @@ class Model(Persistent):
             posted_on = Timestamp
             comments = List
 
-    ::
-
-        >>> Post()
-        Post(id=UUID('c3f043a8-8f1f-4381-89b3-fd1f35265925'),
-             posted_on=datetime.datetime(2010, 10, 20, 15, 42, 34, 138015),
-             comments=[])
-        >>> type(Post().comments)
-        <class 'persistent.list.PersistentList'>
+    >>> Post()
+    Post(id=UUID('c3f043a8-8f1f-4381-89b3-fd1f35265925'),
+         posted_on=datetime.datetime(2010, 10, 20, 15, 42, 34, 138015),
+         comments=[])
+    >>> type(Post().comments)
+    <class 'persistent.list.PersistentList'>
 
     """
 
