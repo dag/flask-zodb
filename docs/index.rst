@@ -51,7 +51,15 @@ Core
 ~~~~
 
 .. autoclass:: ZODB
-    :members:
+    :members: db, connection
+
+    .. automethod:: init_app()
+
+    .. automethod:: root_factory()
+
+    .. autoattribute:: root
+
+    .. automethod:: transaction()
 
 
 Optional Conveniences for Persistent Objects
