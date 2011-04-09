@@ -65,15 +65,27 @@ class ZODB(IterableUserDict):
 
     @cached_property
     def db(self):
-        """The connection pool for your :data:`ZODB_STORAGE`. You don't
-        usually need to use this directly yourself. See also the
-        `reference documentation for this object
-        <http://docs.zope.org/zope3/Code/ZODB/DB/DB/index.html>`_."""
+        """The connection pool for your storage. You can safely ignore
+        this.
+
+        .. admonition:: API Reference
+
+            `ZODB.DB.DB
+            <http://docs.zope.org/zope3/Code/ZODB/DB/DB/>`_
+
+        """
         return DB(self.app.config['ZODB_STORAGE']())
 
     @property
     def connection(self):
-        """Request-local database connection."""
+        """Request-local database connection. You can safely ignore this.
+
+        .. admonition:: API Reference
+
+            `ZODB.Connection.Connection
+            <http://docs.zope.org/zope3/Code/ZODB/Connection/Connection/>`_
+
+        """
         if not hasattr(current_ctx, 'zodb_connection'):
             current_ctx.zodb_connection = self.db.open()
             transaction.begin()
