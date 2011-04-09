@@ -53,9 +53,9 @@ Core
 .. autoclass:: ZODB
     :members: db, connection
 
-    .. automethod:: init_app()
+    .. automethod:: init_app
 
-    .. automethod:: root_factory()
+    .. automethod:: root_factory
 
     .. autoattribute:: root
 
