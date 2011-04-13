@@ -1,4 +1,5 @@
 ZODB3
+transaction>=1.1.0
 repoze.zodbconn
 -e git://github.com/dag/flask-attest.git#egg=Flask-Attest
 -e git://github.com/mitsuhiko/flask.git#egg=Flask
