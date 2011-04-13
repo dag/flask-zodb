@@ -59,7 +59,7 @@ class ZODB(IterableUserDict):
         @app.teardown_request
         def close_db(exception):
             if self.connected:
-                if exception is None:
+                if exception is None and not transaction.isDoomed():
                     transaction.commit()
                 else:
                     transaction.abort()
