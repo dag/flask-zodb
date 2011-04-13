@@ -30,7 +30,7 @@ Transactions
 ------------
 
 ZODB relies on transactions to write changes to the storage. Flask-ZODB
-provides a transactive context manager that lets us work with the object
+provides a transactional context manager that lets us work with the object
 store easily::
 
     with db.transaction() as root:
@@ -49,7 +49,7 @@ process:
 ...
 Armin Ronacher
 
-Requests in Flask are transactive with Flask-ZODB, so we don't normally
+Requests in Flask are transactional with Flask-ZODB, so we don't normally
 need the above in view functions. The extension object also functions like
 a `dict`, proxying to the root object during requests::
 
@@ -75,7 +75,7 @@ way around it is to create a new mapping to override the old one::
 
     root['developers'] = dict(root['developers'], **{'Python': 'Guido van Rossum'})
 
-While this works, it isn's very neat. A better solution is to wrap objects
+While this works, it isn't very neat. A better solution is to wrap objects
 in "persistence-aware" types that behave just like the types you're used to
 working with, but that mark themselves as mutated when needed. We rewrite
 the initiation of the *developers* mapping thus::
