@@ -49,6 +49,23 @@ API Reference
 Core
 ~~~~
 
+.. describe:: ZODB_STORAGE
+
+    Mandatory configuration key for your Flask application, needs to be set
+    before :meth:`~ZODB.init_app` (which is called for you if you pass an
+    app directly to :class:`ZODB` at construction).
+
+    Should be either a callable that returns a storage::
+
+        from ZODB.DemoStorage import DemoStorage
+        # use a lambda if you need to set arguments
+        app.config['ZODB_STORAGE'] = DemoStorage
+
+    or an URI as a string, as documented `here
+    <http://docs.repoze.org/zodbconn/narr.html>`_::
+
+        app.config['ZODB_STORAGE'] = 'file://app.fs'
+
 .. autoclass:: ZODB
     :members: db, connection
 
