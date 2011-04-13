@@ -1,3 +1,4 @@
 ZODB3
+repoze.zodbconn
 -e git://github.com/dag/flask-attest.git#egg=Flask-Attest
 -e git://github.com/mitsuhiko/flask.git#egg=Flask
