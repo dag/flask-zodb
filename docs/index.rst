@@ -7,11 +7,10 @@ ZODB extension for Flask: persistence of native Python objects.
 
 Basic setup::
 
-    from ZODB.FileStorage import FileStorage
     from flask import Flask, redirect, render_template_string
     from flaskext.zodb import ZODB
 
-    ZODB_STORAGE = lambda: FileStorage('app.fs')
+    ZODB_STORAGE = 'file://app.fs'
 
     app = Flask(__name__)
     app.config.from_object(__name__)

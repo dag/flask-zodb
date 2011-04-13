@@ -5,6 +5,7 @@ from uuid import uuid4
 
 from werkzeug import cached_property, LocalProxy
 from ZODB.DB import DB
+from repoze.zodbconn.uri import db_from_uri
 from flask import _request_ctx_stack, current_app
 import transaction
 from persistent import Persistent
@@ -73,7 +74,10 @@ class ZODB(IterableUserDict):
             <http://docs.zope.org/zope3/Code/ZODB/DB/DB/>`_
 
         """
-        return DB(self.app.config['ZODB_STORAGE']())
+        storage = self.app.config['ZODB_STORAGE']
+        if isinstance(storage, basestring):
+            return db_from_uri(storage)
+        return DB(storage())
 
     @property
     def connection(self):

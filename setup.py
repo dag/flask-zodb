@@ -10,6 +10,7 @@ setup(
     install_requires=[
         'Flask',
         'ZODB3',
+        'repoze.zodbconn',
     ],
 
     zip_safe=False,

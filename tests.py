@@ -13,6 +13,7 @@ import tempfile
 from os import path
 import shutil
 from ZODB.FileStorage import FileStorage
+from ZODB.DemoStorage import DemoStorage
 
 
 TESTING = True
@@ -88,7 +89,7 @@ def testapp():
     dbfile = path.join(tmpdir, 'test.db')
     app = Flask(__name__)
     app.config.from_object(__name__)
-    app.config['ZODB_STORAGE'] = lambda: FileStorage(dbfile)
+    app.config['ZODB_STORAGE'] = 'file://%s' % dbfile
     app.register_module(mod)
     db.init_app(app)
     try:
@@ -133,7 +134,32 @@ def local_proxy():
     assert current_app.extensions['zodb'] is current_db._get_current_object()
 
 
-all = Tests([models, zodb])
+storage = Tests()
+
+@storage.context
+def simpleapp():
+    tmpdir = tempfile.mkdtemp()
+    dbfile = path.join(tmpdir, 'test.db')
+    app = Flask(__name__)
+    app.config.from_object(__name__)
+    try:
+        with app.test_request_context():
+            yield app, dbfile
+    finally:
+        shutil.rmtree(tmpdir)
+
+@storage.test
+def from_uri(app, dbfile):
+    app.config['ZODB_STORAGE'] = 'file://%s' % dbfile
+    assert type(ZODB(app).db.storage) is FileStorage
+
+@storage.test
+def from_callable(app, dbfile):
+    app.config['ZODB_STORAGE'] = DemoStorage
+    assert type(ZODB(app).db.storage) is DemoStorage
+
+
+all = Tests([models, zodb, storage])
 
 if __name__ == '__main__':
     all.main()
