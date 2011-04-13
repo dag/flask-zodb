@@ -58,11 +58,12 @@ class ZODB(IterableUserDict):
 
         @app.teardown_request
         def close_db(exception):
-            if exception is None:
-                transaction.commit()
-            else:
-                transaction.abort()
-            self.connection.close()
+            if self.connected:
+                if exception is None:
+                    transaction.commit()
+                else:
+                    transaction.abort()
+                self.connection.close()
 
     @cached_property
     def db(self):
@@ -80,6 +81,10 @@ class ZODB(IterableUserDict):
         return DB(storage())
 
     @property
+    def connected(self):
+        return hasattr(current_ctx, 'zodb_connection')
+
+    @property
     def connection(self):
         """Request-local database connection. You can safely ignore this.
 
@@ -88,7 +93,7 @@ class ZODB(IterableUserDict):
             <http://docs.zope.org/zope3/Code/ZODB/Connection/Connection/>`_
 
         """
-        if not hasattr(current_ctx, 'zodb_connection'):
+        if not self.connected:
             current_ctx.zodb_connection = self.db.open()
             transaction.begin()
         return current_ctx.zodb_connection
