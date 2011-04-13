@@ -46,6 +46,7 @@ process:
 
 >>> with db.transaction() as root:
 ...     print root['developers']['Flask']
+...
 Armin Ronacher
 
 Requests in Flask are transactive with Flask-ZODB, so we don't normally
