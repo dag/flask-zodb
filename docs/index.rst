@@ -152,7 +152,7 @@ Core
         # use a lambda if you need to set arguments
         app.config['ZODB_STORAGE'] = DemoStorage
 
-    or an URI as a string, as documented `here
+    or a URI as a string, as documented `here
     <http://docs.repoze.org/zodbconn/narr.html>`_::
 
         app.config['ZODB_STORAGE'] = 'file://app.fs'
