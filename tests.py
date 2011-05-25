@@ -1,5 +1,5 @@
 from flask import Flask, Module, request, Response, current_app
-from attest import Tests, assert_hook
+from attest import Tests, tempdir, assert_hook
 
 from flaskext.attest import request_context
 from flaskext.zodb import ZODB, current_db, current_ctx
@@ -9,7 +9,6 @@ import uuid
 from flaskext.zodb import (Model, List, Mapping, BTree, Timestamp, UUID,
                            PersistentList, PersistentMapping, OOBTree)
 
-import tempfile
 from os import path
 import shutil
 from ZODB.FileStorage import FileStorage
@@ -85,17 +84,14 @@ def retrieve():
 
 @request_context
 def testapp():
-    tmpdir = tempfile.mkdtemp()
-    dbfile = path.join(tmpdir, 'test.db')
     app = Flask(__name__)
-    app.config.from_object(__name__)
-    app.config['ZODB_STORAGE'] = 'file://%s' % dbfile
     app.register_module(mod)
-    db.init_app(app)
-    try:
+    app.config.from_object(__name__)
+    with tempdir() as name:
+        dbfile = path.join(name, 'test.db')
+        app.config['ZODB_STORAGE'] = 'file://%s' % dbfile
+        db.init_app(app)
         yield app
-    finally:
-        shutil.rmtree(tmpdir)
 
 zodb = Tests(contexts=[testapp])
 
@@ -138,20 +134,18 @@ storage = Tests()
 
 @storage.context
 def simpleapp():
-    tmpdir = tempfile.mkdtemp()
-    dbfile = path.join(tmpdir, 'test.db')
     app = Flask(__name__)
     app.config.from_object(__name__)
-    try:
+    with tempdir() as name:
+        dbfile = path.join(name, 'test.db')
         with app.test_request_context():
             yield app, dbfile
-    finally:
-        shutil.rmtree(tmpdir)
 
 @storage.test
 def from_uri(app, dbfile):
     app.config['ZODB_STORAGE'] = 'file://%s' % dbfile
-    assert type(ZODB(app).db.storage) is FileStorage
+    db = ZODB(app)
+    assert type(db.db.storage) is FileStorage
 
 @storage.test
 def from_callable(app, dbfile):
