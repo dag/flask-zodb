@@ -55,15 +55,15 @@ class ZODB(IterableUserDict):
         if not hasattr(app, 'extensions'):
             app.extensions = {}
         app.extensions['zodb'] = self
+        app.teardown_request(self.close_db)
 
-        @app.teardown_request
-        def close_db(exception):
-            if self.connected:
-                if exception is None and not transaction.isDoomed():
-                    transaction.commit()
-                else:
-                    transaction.abort()
-                self.connection.close()
+    def close_db(self, exception):
+        if self.connected:
+            if exception is None and not transaction.isDoomed():
+                transaction.commit()
+            else:
+                transaction.abort()
+            self.connection.close()
 
     @cached_property
     def db(self):
