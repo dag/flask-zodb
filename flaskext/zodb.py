@@ -151,7 +151,7 @@ class ZODB(IterableUserDict):
 
         """
         with closing(self.db.open()) as connection:
-            with transaction:
+            with transaction.manager:
                 yield connection.root()
 
 
