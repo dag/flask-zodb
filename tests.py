@@ -6,11 +6,13 @@ from flaskext.zodb import ZODB, current_db, current_ctx
 
 from datetime import datetime
 import uuid
-from flaskext.zodb import (Model, List, Mapping, BTree, Timestamp, UUID,
-                           PersistentList, PersistentMapping, OOBTree)
+from flaskext.zodb import (Model,
+                           new,
+                           PersistentList,
+                           PersistentMapping,
+                           OOBTree)
 
 from os import path
-import shutil
 from ZODB.FileStorage import FileStorage
 from ZODB.DemoStorage import DemoStorage
 
@@ -20,16 +22,16 @@ TESTING = True
 
 class TestModel(Model):
 
-    sequence = List
-    mapping = Mapping
-    btree = BTree
-    timestamp = Timestamp
-    id = UUID
+    sequence = new(list, [0])
+    mapping = new(dict)
+    btree = new(OOBTree)
+    timestamp = new(datetime.utcnow)
+    id = new(uuid.uuid4)
     something_else = None
 
 class CustomInitModel(Model):
 
-    sequence = List
+    sequence = new(list)
 
     def __init__(self, sequence):
         self.sequence.extend(sequence)
@@ -46,6 +48,8 @@ def init_empty():
     assert type(instance.timestamp) is datetime
     assert type(instance.id) is uuid.UUID
     assert instance.something_else is None
+    assert instance.sequence is not TestModel().sequence
+    assert instance.sequence == [0]
 
 @models.test
 def model_kwargs():
@@ -55,7 +59,7 @@ def model_kwargs():
     assert type(instance.sequence) is PersistentList
     assert type(instance.mapping) is PersistentMapping
     assert type(instance.btree) is OOBTree
-    assert instance.sequence == [1, 2, 3]
+    assert instance.sequence == [0, 1, 2, 3]
     assert instance.something_else is None
 
     instance = TestModel(other='foo', something_else=123)

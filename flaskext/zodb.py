@@ -1,9 +1,9 @@
 from UserDict import IterableUserDict
 from contextlib import contextmanager, closing
-from datetime import datetime
-from uuid import uuid4
 
-from werkzeug import cached_property, LocalProxy
+from collections import MutableMapping, MutableSequence
+
+from werkzeug import cached_property, LocalProxy, ImmutableDict
 from ZODB.DB import DB
 from repoze.zodbconn.uri import db_from_uri
 from flask import _request_ctx_stack, current_app
@@ -156,43 +156,30 @@ class ZODB(IterableUserDict):
 
 
 class Model(Persistent):
-    """Convenience model base.
-
-    You can subclass :class:`~persistent.Persistent` directly if you
-    prefer, but this base provides some conveniences.
-
-    Set attributes in instantiation:
+    """Convenience model base. Like :class:`~persistent.Persistent`
+    but with a default constructor that sets attributes from keyword
+    arguments and with a corresponding repr:
 
     >>> Model(title='Hello!')
     Model(title='Hello!')
     >>> Model(title='Hello!').title
     'Hello!'
 
-    Declare mutable and dynamic attributes in the class definition::
+    Declare mutable and dynamic attributes in the class definition:
+
+    If the attribute exists and is a mutable mapping or sequence it is
+    updated in-place::
 
         class Post(Model):
-            id = UUID
-            posted_on = Timestamp
-            comments = List
+            comments = new(list, ['Hi there!'])
 
-    >>> Post()
-    Post(id=UUID('c3f043a8-8f1f-4381-89b3-fd1f35265925'),
-         posted_on=datetime.datetime(2010, 10, 20, 15, 42, 34, 138015),
-         comments=[])
-    >>> type(Post().comments)
+    >>> post = Post(comments=['Hello!'])
+    >>> post.comments
+    ['Hi there!', 'Hello!']
+    >>> type(post.comments)
     <class 'persistent.list.PersistentList'>
 
-    The latter works even if you override :meth:`__init__`.
-
     """
-
-    def __new__(cls, *args, **kwargs):
-        self = Persistent.__new__(cls, *args, **kwargs)
-        for name in dir(self):
-            value = getattr(self, name)
-            if isinstance(value, Factory):
-                setattr(self, name, value())
-        return self
 
     def __init__(self, **kwargs):
         for name, value in kwargs.iteritems():
@@ -200,10 +187,10 @@ class Model(Persistent):
                 attribute = getattr(self, name)
             except AttributeError:
                 attribute = None
-            if isinstance(attribute, PersistentList):
-                attribute.extend(value)
-            elif isinstance(attribute, (PersistentMapping, OOBTree)):
+            if isinstance(attribute, (MutableMapping, OOBTree)):
                 attribute.update(value)
+            elif isinstance(attribute, MutableSequence):
+                attribute.extend(value)
             else:
                 setattr(self, name, value)
 
@@ -213,46 +200,39 @@ class Model(Persistent):
         return '{0}({1})'.format(self.__class__.__name__, attributes)
 
 
-class Factory(object):
-    """Set a :class:`Model` attribute with a callable on instantiation.
-    Useful for delaying initiation of mutable or dynamic objects.
+class new(object):
+    """Declare a class attribute to become a new instance of a type for
+    each instance of the class. Uses persistent counterparts for `list` and
+    `dict`.
 
-    ::
+    These are the same::
 
-        class Dice(Model):
-            side = Factory(random.randint, 1, 6)
+        class Dice(object):
+            def __init__(self):
+                self.side = random.randint(1, 6)
 
-    >>> Dice()
-    Dice(side=3)
-    >>> Dice()
-    Dice(side=5)
+        class Dice(object):
+            side = new(random.randint, 1, 6)
+
+    >>> Dice().side
+    3
+    >>> Dice().side
+    5
 
     """
 
-    def __init__(self, callable, *args, **kwargs):
-        self.callable = callable
-        self.args = args
-        self.kwargs = kwargs
+    aliases = ImmutableDict({list: PersistentList,
+                             dict: PersistentMapping})
 
-    def __call__(self):
-        return self.callable(*self.args, **self.kwargs)
+    def __init__(self, constructor, *args, **kwargs):
+        self.constructor = self.aliases.get(constructor, constructor)
+        self.args, self.kwargs = args, kwargs
 
-
-#: UTC datetime timestamp factory.
-Timestamp = Factory(datetime.utcnow)
-
-#: Version 4 UUID factory.
-UUID = Factory(uuid4)
-
-#: Factory for :class:`~persistent.list.PersistentList`.
-List = Factory(PersistentList)
-
-#: Factory for :class:`~persistent.mapping.PersistentMapping`.
-Mapping = Factory(PersistentMapping)
-
-#: Factory for an object-to-object balanced tree mapping,
-#: an :class:`~BTrees.OOBTree.OOBTree`.
-BTree = Factory(OOBTree)
+    def __get__(self, instance, owner):
+        if self not in vars(instance):
+            value = self.constructor(*self.args, **self.kwargs)
+            vars(instance)[self] = value
+        return vars(instance)[self]
 
 
 #: The :class:`ZODB` instance for the current :class:`~flask.Flask`
