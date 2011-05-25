@@ -62,8 +62,9 @@ def model_kwargs():
     assert instance.sequence == [0, 1, 2, 3]
     assert instance.something_else is None
 
-    instance = TestModel(other='foo', something_else=123)
-    assert instance.other == 'foo'
+    instance = TestModel(other=[1,2,3], something_else=123)
+    assert type(instance.other) is PersistentList
+    assert instance.other == [1,2,3]
     assert instance.something_else == 123
 
 @models.test

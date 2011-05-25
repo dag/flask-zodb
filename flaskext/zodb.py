@@ -191,6 +191,10 @@ class Model(Persistent):
                 attribute.update(value)
             elif isinstance(attribute, MutableSequence):
                 attribute.extend(value)
+            elif isinstance(value, MutableMapping):
+                setattr(self, name, PersistentMapping(value))
+            elif isinstance(value, MutableSequence):
+                setattr(self, name, PersistentList(value))
             else:
                 setattr(self, name, value)
 
