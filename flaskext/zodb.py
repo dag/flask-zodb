@@ -155,55 +155,6 @@ class ZODB(IterableUserDict):
                 yield connection.root()
 
 
-class Model(Persistent):
-    """Convenience model base. Like :class:`~persistent.Persistent`
-    but with a default constructor that sets attributes from keyword
-    arguments and with a corresponding repr:
-
-    >>> Model(title='Hello!')
-    Model(title='Hello!')
-    >>> Model(title='Hello!').title
-    'Hello!'
-
-    Declare mutable and dynamic attributes in the class definition:
-
-    If the attribute exists and is a mutable mapping or sequence it is
-    updated in-place::
-
-        class Post(Model):
-            comments = new(list, ['Hi there!'])
-
-    >>> post = Post(comments=['Hello!'])
-    >>> post.comments
-    ['Hi there!', 'Hello!']
-    >>> type(post.comments)
-    <class 'persistent.list.PersistentList'>
-
-    """
-
-    def __init__(self, **kwargs):
-        for name, value in kwargs.iteritems():
-            try:
-                attribute = getattr(self, name)
-            except AttributeError:
-                attribute = None
-            if isinstance(attribute, (MutableMapping, OOBTree)):
-                attribute.update(value)
-            elif isinstance(attribute, MutableSequence):
-                attribute.extend(value)
-            elif isinstance(value, MutableMapping):
-                setattr(self, name, PersistentMapping(value))
-            elif isinstance(value, MutableSequence):
-                setattr(self, name, PersistentList(value))
-            else:
-                setattr(self, name, value)
-
-    def __repr__(self):
-        attributes = ', '.join('{0}={1!r}'.format(name, value)
-            for (name, value) in vars(self).iteritems())
-        return '{0}({1})'.format(self.__class__.__name__, attributes)
-
-
 class new(object):
     """Declare a class attribute to become a new instance of a type for
     each instance of the class. Uses persistent counterparts for `list` and
@@ -232,11 +183,65 @@ class new(object):
         self.constructor = self.aliases.get(constructor, constructor)
         self.args, self.kwargs = args, kwargs
 
-    def __get__(self, instance, owner):
-        if self not in vars(instance):
-            value = self.constructor(*self.args, **self.kwargs)
-            vars(instance)[self] = value
-        return vars(instance)[self]
+    def create_new(self):
+        return self.constructor(*self.args, **self.kwargs)
+
+
+class Model(Persistent):
+    """Convenience model base. Like :class:`~persistent.Persistent`
+    but with a default constructor that sets attributes from keyword
+    arguments and with a corresponding repr:
+
+    >>> Model(title='Hello!')
+    Model(title='Hello!')
+    >>> Model(title='Hello!').title
+    'Hello!'
+
+    Declare mutable and dynamic attributes in the class definition:
+
+    If the attribute exists and is a mutable mapping or sequence it is
+    updated in-place::
+
+        class Post(Model):
+            comments = new(list, ['Hi there!'])
+
+    >>> post = Post(comments=['Hello!'])
+    >>> post.comments
+    ['Hi there!', 'Hello!']
+    >>> type(post.comments)
+    <class 'persistent.list.PersistentList'>
+
+    """
+
+    def __new__(cls, *args, **kwargs):
+        self = super(Model, cls).__new__(cls, *args, **kwargs)
+        for name in dir(self):
+            value = getattr(self, name)
+            if isinstance(value, new):
+                setattr(self, name, value.create_new())
+        return self
+
+    def __init__(self, **kwargs):
+        for name, value in kwargs.iteritems():
+            try:
+                attribute = getattr(self, name)
+            except AttributeError:
+                attribute = None
+            if isinstance(attribute, (MutableMapping, OOBTree)):
+                attribute.update(value)
+            elif isinstance(attribute, MutableSequence):
+                attribute.extend(value)
+            elif isinstance(value, MutableMapping):
+                setattr(self, name, PersistentMapping(value))
+            elif isinstance(value, MutableSequence):
+                setattr(self, name, PersistentList(value))
+            else:
+                setattr(self, name, value)
+
+    def __repr__(self):
+        attributes = ', '.join('{0}={1!r}'.format(name, value)
+            for (name, value) in vars(self).iteritems())
+        return '{0}({1})'.format(self.__class__.__name__, attributes)
 
 
 #: The :class:`ZODB` instance for the current :class:`~flask.Flask`
