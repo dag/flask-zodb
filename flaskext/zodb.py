@@ -221,7 +221,7 @@ class Model(Persistent):
                 setattr(self, name, value.create_new())
         return self
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         for name, value in kwargs.iteritems():
             try:
                 attribute = getattr(self, name)
@@ -237,6 +237,7 @@ class Model(Persistent):
                 setattr(self, name, PersistentList(value))
             else:
                 setattr(self, name, value)
+        super(Model, self).__init__(*args, **kwargs)
 
     def __repr__(self):
         attributes = ', '.join('{0}={1!r}'.format(name, value)
