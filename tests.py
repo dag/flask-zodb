@@ -109,6 +109,12 @@ def read_write(client):
         assert root['data'] == 'Hello'
     response = client.get('/read/')
     assert response == Response('Hello')
+    with db.transaction() as root:
+        root['model'] = TestModel()
+    with db.transaction() as root:
+        root['model'].sequence.append(1)
+    with db.transaction() as root:
+        assert root['model'].sequence == [0, 1]
 
 @zodb.test
 def request_ctx():
