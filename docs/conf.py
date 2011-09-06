@@ -11,6 +11,7 @@ intersphinx_mapping = {
     'http://docs.python.org/': None,
     'http://flask.pocoo.org/docs/': None,
     'http://werkzeug.pocoo.org/docs/': None,
+    'http://zodb.readthedocs.org/en/latest/': None,
 }
 
 master_doc = 'index'

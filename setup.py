@@ -8,10 +8,8 @@ setup(
     namespace_packages=['flaskext'],
 
     install_requires=[
-        'Flask',
-        'ZODB3',
-        'transaction>=1.1.0',
-        'repoze.zodbconn',
+        'Flask>=0.7',
+        'zodburi',
     ],
 
     zip_safe=False,
