@@ -16,8 +16,10 @@ intersphinx_mapping = {
 
 master_doc = 'index'
 
+html_static_path = ['_static']
 html_theme_path = ['_themes']
 html_theme = 'flask_small'
 html_theme_options = {
-    'github_fork': 'dag/flask-zodb'
+    'index_logo': 'flask-zodb.png',
+    'github_fork': 'dag/flask-zodb',
 }
