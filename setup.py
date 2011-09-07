@@ -2,29 +2,34 @@
 Flask-ZODB
 ----------
 
+.. image:: http://packages.python.org/Flask-ZODB/_static/flask-zodb.png
+
 Transparent and scalable persistence of Python objects for Flask
 applications.  Use it as your database or as a complement to another
 database - for example PostgreSQL where you need to perform rich queries
 and ZODB where you need structured data and mapping to and from Python
 types is inconvenient.
 
-Usage is completely seamless::
-
-    from flask import Flask, request, redirect, render_template
-    from flaskext.zodb import ZODB
+::
 
     app = Flask(__name__)
-    app.config['ZODB_STORAGE'] = 'file://app.fs'
     db = ZODB(app)
 
-    @app.route('/', methods=['GET', 'POST'])
-    def index():
-        if request.method == 'POST':
-            db['shoutout'] = request.form['message']
-            return redirect('index')
-        else:
-            message = db.get('shoutout', 'Be the first to shout!')
-            return render_template('index.html', message=message)
+    @app.before_request
+    def set_db_defaults():
+        if 'entries' not in db:
+            db['entries'] = List()
+
+    @app.route('/')
+    def show_entries():
+        return render_template('show_entries.html', entries=db['entries'])
+
+
+    @app.route('/add', methods=['POST'])
+    def add_entry():
+        db['entries'].append(request.form)
+        flash('New entry was successfully posted')
+        return redirect(url_for('show_entries'))
 
 """
 
