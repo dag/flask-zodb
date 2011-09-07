@@ -41,11 +41,13 @@ setup(
 
     description='Use the ZODB with Flask',
     long_description=__doc__,
+    keywords=['flask', 'zodb', 'persistence', 'database'],
 
     packages=['flaskext'],
     namespace_packages=['flaskext'],
     zip_safe=False,
 
+    requires=['flask (>=0.7)', 'ZODB', 'zodburi'],
     install_requires=[
         'Flask>=0.7',
         'zodburi',
