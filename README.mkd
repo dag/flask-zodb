@@ -1,5 +1,5 @@
 Flask-ZODB
-==========
+----------
 
 ![Flask-ZODB][logo]
 
@@ -31,4 +31,4 @@ For more information see the [documentation][docs].
 
 
 [docs]: http://packages.python.org/Flask-ZODB/
-[logo]: https://github.com/dag/flask-zodb/blob/master/docs/_static/flask-zodb.png
+[logo]: https://github.com/dag/flask-zodb/raw/master/docs/_static/flask-zodb.png
