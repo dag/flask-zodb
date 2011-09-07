@@ -26,6 +26,64 @@ working directory -- this is rarely what you want in practice but is good
 enough for demonstrative purposes and maybe for development.
 
 
+Using the ZODB from a Flask View
+--------------------------------
+
+This `db` object we set up functions like a normal Python dict that is
+persistent between requests and server restarts, independent of the user
+session and can be set up to propagate between multiple processes or over a
+network.  Requests in Flask are treated as a transaction that is committed
+if there was no exception raised.
+
+::
+
+  from flask import request, redirect, render_template
+
+  @app.route('/', methods=['GET', 'POST'])
+  def index():
+      if request.method == 'POST':
+          db['shoutout'] = request.form['message']
+          return redirect('index')
+      else:
+          message = db.get('shoutout', 'Be the first to shout!')
+          return render_template('index.html', message=message)
+
+
+Connecting from Outside Requests
+--------------------------------
+
+All you need to do is set up a test request context for your Flask
+application and the ZODB object will be able to connect, and commit when
+the request context is "popped":
+
+::
+
+  with app.test_request_context():
+      db['shoutout'] = 'Developer was here!'
+
+
+Gotcha: Mutating Persisted Objects
+----------------------------------
+
+If you save a mutable object in the ZODB and later mutate it, ZODB will not
+be able to detect this and it won't be saved!  This is because ZODB tries
+hard to avoid needless reading and writing and will only write *new*
+objects.  You can tell ZODB that an object was changed by setting the
+``_p_changed`` attribute to be true, or you can use the data types shipped
+with ZODB that handles this for you.
+
+::
+
+  from flaskext.zodb import Object, List
+
+  class User(Object):
+
+      def __init__(self, name, password):
+          self.name = name
+          self.password = password
+          self.shoutouts = List()
+
+
 API Reference
 -------------
 
