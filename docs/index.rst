@@ -48,6 +48,17 @@ if there was no exception raised.
           message = db.get('shoutout', 'Be the first to shout!')
           return render_template('index.html', message=message)
 
+The template might look something like this:
+
+.. sourcecode:: html+jinja
+
+  <h1>{{ message }}</h1>
+
+  <form action="{{ url_for('index') }}" method=POST>
+    <input name=message>
+    <button type=submit>Post!</button>
+  </form>
+
 
 Connecting from Outside Requests
 --------------------------------
