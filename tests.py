@@ -58,8 +58,8 @@ def test_abort_transaction_on_failure(app):
             assert db['answer'] == 42
             1/0
 
-    with app.test_request_context():
-        assert 'answer' not in db
+        with app.test_request_context():
+            assert 'answer' not in db
 
 
 def test_abort_transaction_if_doomed(app):
