@@ -3,12 +3,6 @@ Flask-ZODB
 
 .. module:: flaskext.zodb
 
-.. contents::
-  :depth: 1
-  :local:
-  :backlinks: none
-  :class: sidebar
-
 An object database for your Flask application.
 
 Features
