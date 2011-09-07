@@ -1,0 +1,34 @@
+Flask-ZODB
+==========
+
+![Flask-ZODB][logo]
+
+
+Simple extension for integrating the ZODB in Flask applications.
+
+```python
+app = Flask(__name__)
+db = ZODB(app)
+
+@app.before_request
+def set_db_defaults():
+    if 'entries' not in db:
+        db['entries'] = List()
+
+@app.route('/')
+def show_entries():
+    return render_template('show_entries.html', entries=db['entries'])
+
+
+@app.route('/add', methods=['POST'])
+def add_entry():
+    db['entries'].append(request.form)
+    flash('New entry was successfully posted')
+    return redirect(url_for('show_entries'))
+```
+
+For more information see the [documentation][docs].
+
+
+[docs]: http://packages.python.org/Flask-ZODB/
+[logo]: https://github.com/dag/flask-zodb/blob/master/docs/_static/flask-zodb.png
