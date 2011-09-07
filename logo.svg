@@ -20,7 +20,10 @@
    enable-background="new 0 0 314.104 273.292"
    xml:space="preserve"
    inkscape:version="0.48.1 r9760"
-   sodipodi:docname="typewriter.svg"><metadata
+   sodipodi:docname="logo.svg"
+   inkscape:export-filename="/home/dag/Code/flask-zodb/docs/_static/flask-zodb.png"
+   inkscape:export-xdpi="36.23291"
+   inkscape:export-ydpi="36.23291"><metadata
    id="metadata1901"><rdf:RDF><cc:Work
        rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
          rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
@@ -53,9 +56,9 @@
    inkscape:window-height="1056"
    id="namedview1897"
    showgrid="false"
-   inkscape:zoom="1.2257952"
-   inkscape:cx="131.34139"
-   inkscape:cy="299.80539"
+   inkscape:zoom="0.43338405"
+   inkscape:cx="584.46347"
+   inkscape:cy="300.39559"
    inkscape:window-x="66"
    inkscape:window-y="24"
    inkscape:window-maximized="1"
@@ -4722,7 +4725,7 @@
 </g>
 <text
    xml:space="preserve"
-   style="font-size:40px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:url(#linearGradient5674);font-family:BetecknaLowerCase;-inkscape-font-specification:BetecknaLowerCase Medium"
+   style="font-size:40px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:url(#linearGradient5674);font-family:BetecknaLowerCase;-inkscape-font-specification:BetecknaLowerCase Medium;stroke-width:3.00000009;stroke-miterlimit:4;stroke-dasharray:none"
    x="-53.842617"
    y="-171.3174"
    id="text4878"
@@ -4731,7 +4734,8 @@
      id="tspan4880"
      x="-53.842617"
      y="-171.3174"
-     style="font-size:200px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;stroke:url(#linearGradient5674);font-family:EB Garamond;-inkscape-font-specification:EB Garamond">Flask <tspan
-   style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+     style="font-size:200px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;stroke:url(#linearGradient5674);font-family:EB Garamond;-inkscape-font-specification:EB Garamond;stroke-width:3.00000009;stroke-miterlimit:4;stroke-dasharray:none">Flask <tspan
+   style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1;stroke-width:3.00000009;stroke-miterlimit:4;stroke-dasharray:none"
    id="tspan5666">ZODB</tspan></tspan></text>
+
 </svg>
