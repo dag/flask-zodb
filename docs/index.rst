@@ -3,6 +3,61 @@ Flask-ZODB
 
 .. module:: flaskext.zodb
 
+.. contents::
+  :depth: 1
+  :local:
+  :backlinks: none
+  :class: sidebar
+
+An object database for your Flask application.
+
+Features
+--------
+
+Flask-ZODB inherits these features from the ZODB:
+
+* Transparent persistence of arbitrary Python objects.  The only
+  requirement is that the objects are "pickleable", which is true for most
+  objects that represent data and are not dependent on external resources
+  such as a file descriptor.  Any object can also be *made* pickleable as
+  per the `pickle protocol`_.
+
+  This feature also means you can save deeply nested datastructures and
+  that references between objects are handled correctly.  That is: if you
+  reference the same object in more than one place, the references will
+  continue to reference the same object until you say otherwise.  This
+  means you can associate a blog post with a user object directly rather
+  than indirectly by say a user ID or the username as a string, and it Just
+  Works™ even after the user changes their account data, for example.
+
+  .. _pickle protocol: http://docs.python.org/library/pickle.html#the-pickle-protocol
+
+* Scalability through support for multiprocess deployments and selective
+  reading and writing of data.  Whereas with the pickle module you would
+  normally read and write all data every time the ZODB only writes new and
+  changed data and lazily reads data on demand as you try to access it.
+
+* ACID_ properties ensuring reliable operations and integrity of data.
+
+  .. _ACID: http://en.wikipedia.org/wiki/ACID
+
+
+Installation
+------------
+
+Just pip it from the PyPI_, or include it as a dependency for your
+application:
+
+.. sourcecode:: console
+
+  $ pip install Flask-ZODB
+
+Development takes place on GitHub_ where you can also report any bugs you
+find.
+
+.. _PyPI: http://pypi.python.org/pypi/Flask-ZODB
+.. _GitHub: https://github.com/dag/flask-zodb
+
 
 Setting it Up
 -------------
@@ -71,6 +126,12 @@ the request context is "popped":
 
   with app.test_request_context():
       db['shoutout'] = 'Developer was here!'
+
+This can be useful in unit tests or from an interactive shell, or perhaps
+in a Flask-Script_ command.  Typically a test request context is already
+set up in these cases and you can just use `db` directly.
+
+.. _Flask-Script: http://packages.python.org/Flask-Script/
 
 
 Gotcha: Mutating Persisted Objects
