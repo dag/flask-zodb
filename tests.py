@@ -29,8 +29,8 @@ def pytest_generate_tests(metafunc):
 
 def test_single_app_shortcut():
     app = Flask(__name__)
-    ext = ZODB(app)
-    assert app.extensions['zodb'].ext is ext
+    zodb = ZODB(app)
+    assert app.extensions['zodb'].zodb is zodb
 
 
 def test_connection(app):

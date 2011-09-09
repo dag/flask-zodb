@@ -181,9 +181,6 @@ API Reference
 .. autoclass:: ZODB
   :members:
 
-.. autoclass:: ZODBConnector
-  :members:
-
 
 Persistent Objects
 """"""""""""""""""

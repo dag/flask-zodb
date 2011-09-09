@@ -5,7 +5,7 @@ import zodburi
 from UserDict import IterableUserDict
 from ZODB.DB import DB
 from contextlib import contextmanager, closing
-from werkzeug import cached_property
+from werkzeug.utils import cached_property
 
 from BTrees.OOBTree import OOBTree as BTree
 from persistent import Persistent as Object
@@ -13,7 +13,7 @@ from persistent.list import PersistentList as List
 from persistent.mapping import PersistentMapping as Dict
 
 
-__all__ = ['ZODB', 'ZODBConnector', 'Object', 'List', 'Dict', 'BTree']
+__all__ = ['ZODB', 'Object', 'List', 'Dict', 'BTree']
 
 
 class ZODB(IterableUserDict):
@@ -42,7 +42,7 @@ class ZODB(IterableUserDict):
         """Configure a Flask application to use this ZODB extension."""
         assert 'zodb' not in app.extensions, \
                'app already initiated for zodb'
-        app.extensions['zodb'] = ZODBConnector(self, app)
+        app.extensions['zodb'] = _ZODBState(self, app)
         app.teardown_request(self.close_db)
 
     def close_db(self, exception):
@@ -91,14 +91,14 @@ class ZODB(IterableUserDict):
         return self.connection.root()
 
 
-class ZODBConnector(object):
+class _ZODBState(object):
     """Adds a ZODB connection pool to a Flask application."""
 
-    def __init__(self, ext, app):
-        self.ext = ext
+    def __init__(self, zodb, app):
+        self.zodb = zodb
         self.app = app
 
     @cached_property
     def db(self):
         """Connection pool."""
-        return self.ext.create_db(self.app)
+        return self.zodb.create_db(self.app)
