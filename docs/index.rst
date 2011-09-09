@@ -39,7 +39,7 @@ In addition the extension offers these features itself:
 
 * On-demand connection management.  If you don't use the ZODB during a
   request, it is never connected.  If you do use it, it connects
-  automatically and consequentially disconnects at the end of the request.
+  automatically and subsequently disconnects at the end of the request.
 
 * Automatic transaction management.  The automatic connections also act as
   transactions that gets committed unless there was an error in which case
