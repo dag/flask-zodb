@@ -18,7 +18,7 @@ __all__ = ['ZODB', 'Object', 'List', 'Dict', 'BTree']
 
 class ZODB(IterableUserDict):
     """Extension object.  Behaves as the root object of the storage during
-    requests, i.e. a :class:`~persistent.mapping.PersistentMapping`.
+    requests, i.e. a `~persistent.mapping.PersistentMapping`.
 
     ::
 
@@ -46,8 +46,8 @@ class ZODB(IterableUserDict):
         app.teardown_request(self.close_db)
 
     def close_db(self, exception):
-        """Added as a :meth:`~flask.Flask.teardown_request` to applications
-        to commit the transaction and disconnect ZODB if it was used during
+        """Added as a `~flask.Flask.teardown_request` to applications to
+        commit the transaction and disconnect ZODB if it was used during
         the request."""
         if self.is_connected:
             if exception is None and not transaction.isDoomed():
@@ -57,7 +57,7 @@ class ZODB(IterableUserDict):
             self.connection.close()
 
     def create_db(self, app):
-        """Create a ZODB connection pool from the `app` configuration."""
+        """Create a ZODB connection pool from the *app* configuration."""
         assert 'ZODB_STORAGE' in app.config, \
                'ZODB_STORAGE not configured'
         storage = app.config['ZODB_STORAGE']

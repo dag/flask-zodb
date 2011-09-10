@@ -12,6 +12,9 @@ version = release.split('dev', 1)[0]
 
 
 master_doc = 'index'
+add_module_names = False
+default_role = 'py:obj'
+
 
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx']
 
@@ -22,6 +25,7 @@ intersphinx_mapping = {
     'http://zodb.readthedocs.org/en/latest/': None,
 }
 
+html_compact_lists = False
 html_static_path = ['_static']
 html_theme_path = ['_themes']
 html_theme = 'flask_small'
