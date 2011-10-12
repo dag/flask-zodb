@@ -1,7 +1,7 @@
 Flask-ZODB
 ==========
 
-.. module:: flaskext.zodb
+.. module:: flask.ext.zodb
 
 An object database for your Flask application.
 
@@ -82,7 +82,7 @@ application for handling ZODB connections::
 
   app.config['ZODB_STORAGE'] = 'file://app.fs'
 
-  from flaskext.zodb import ZODB
+  from flask.ext.zodb import ZODB
   db = ZODB(app)
 
 The above uses a filestorage called :file:`app.fs`, located relative to the
@@ -155,7 +155,7 @@ with ZODB that handles this for you.
 
 ::
 
-  from flaskext.zodb import Object, List
+  from flask.ext.zodb import Object, List
 
   class User(Object):
 

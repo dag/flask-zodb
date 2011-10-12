@@ -4,7 +4,7 @@ import pytest
 import transaction
 
 from flask import Flask
-from flaskext.zodb import ZODB
+from flask_zodb import ZODB
 from ZODB.MappingStorage import MappingStorage
 
 

@@ -15,7 +15,7 @@ from sqlite3 import dbapi2 as sqlite3
 from contextlib import closing
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash
-from flaskext.zodb import ZODB, List
+from flask.ext.zodb import ZODB, List
 
 # configuration
 ZODB_STORAGE = 'file:///tmp/flaskr.fs'
